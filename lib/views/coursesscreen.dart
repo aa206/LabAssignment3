@@ -253,32 +253,7 @@ class _CoursesScreenState extends State<CoursesScreen> {
                             border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(5.0))),
                       ),
-                      const SizedBox(height: 5),
-                      Container(
-                        height: 60,
-                        padding: const EdgeInsets.fromLTRB(5, 0, 5, 0),
-                        decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey),
-                            borderRadius:
-                                const BorderRadius.all(Radius.circular(5.0))),
-                        child: DropdownButton(
-                          value: dropdownvalue,
-                          underline: const SizedBox(),
-                          isExpanded: true,
-                          icon: const Icon(Icons.keyboard_arrow_down),
-                          items: types.map((String items) {
-                            return DropdownMenuItem(
-                              value: items,
-                              child: Text(items),
-                            );
-                          }).toList(),
-                          onChanged: (String? newValue) {
-                            setState(() {
-                              dropdownvalue = newValue!;
-                            });
-                          },
-                        ),
-                      ),
+                    
                     ],
                   ),
                 ),
