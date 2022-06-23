@@ -2,8 +2,11 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:mytutor/views/favoritescreen.dart';
 import 'package:mytutor/views/loginscreen.dart';
+import 'package:mytutor/views/profilescreen.dart';
 import 'package:mytutor/views/registerscreen.dart';
+import 'package:mytutor/views/subscribescreen.dart';
 import 'package:mytutor/views/tutorsscreen.dart';
 import 'package:mytutor/views/coursesscreen.dart';
 import 'package:http/http.dart' as http;
@@ -27,11 +30,12 @@ class _MainScreenState extends State<MainScreen> {
     _pages =<Widget>[
       CoursesScreen(user: widget.user),
       TutorsScreen(user: widget.user),
-      CoursesScreen(user: widget.user),
-      TutorsScreen(user: widget.user),
-      CoursesScreen(user: widget.user),
+      SubscribeScreen(user: widget.user),
+      FavoriteScreen(user: widget.user),
+      ProfileScreen(user: widget.user),
     ];
   }
+  
  int _selectedIndex = 0;
   void _onItemTapped(int index) {
     setState(() {

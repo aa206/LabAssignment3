@@ -212,7 +212,7 @@ class _TutorsScreenState extends State<TutorsScreen> {
   );
   
 }     void _loadTutors() {
-        http.post(Uri.parse("http://10.143.166.152/mytutor2/php/loadcourses.php"),
+        http.post(Uri.parse("http://10.143.166.152/mytutor2/php/loadtutors.php"),
             body: {}).then((response) {
           var jsondata = jsonDecode(response.body);
           if (response.statusCode == 200 && jsondata['status'] == 'success') {
