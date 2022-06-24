@@ -288,7 +288,7 @@ class _CoursesScreenState extends State<CoursesScreen> {
 }     void _loadSubjects(int pageno, String _search) {
         curpage = pageno;
         numofpage ?? 1;
-        http.post(Uri.parse("http://10.143.166.152/mytutor2/php/loadcourses.php"),
+        http.post(Uri.parse("http://10.143.166.152/mytutor3/php/loadcourses.php"),
             body: {
               'pageno': pageno.toString(),
               'search': _search,

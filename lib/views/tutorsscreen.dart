@@ -283,7 +283,7 @@ class _TutorsScreenState extends State<TutorsScreen> {
 }     void _loadTutors(int pageno, String _search) {
         curpage = pageno;
         numofpage ?? 1;
-        http.post(Uri.parse("http://10.143.166.152/mytutor2/php/loadtutors.php"),
+        http.post(Uri.parse("http://10.143.166.152/mytutor3/php/loadtutors.php"),
             body: {
               'pageno': pageno.toString(),
               'search': _search,

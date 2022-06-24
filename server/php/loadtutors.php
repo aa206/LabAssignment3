@@ -1,10 +1,17 @@
 <?php
 
 include_once("dbconnect.php");
+$results_per_page = 10;
+$page_no = (int)$_POST['pageno'];
+$search = $_POST['search'];
+$page_first_result = ($pageno - 1) * $results_per_page;
 
 $sqlloadtutors = "SELECT * FROM tbl_tutors";
 
 $result = $conn->query($sqlloadtutors);
+$number_of_result = $result->num_rows;
+$number_of_page = ceil($number_of_result / $result_per_page);
+$sqlloadtutors = $sqlloadtutors . " LIMIT $page_first_result , $results_per_page";
 if ($result->num_rows > 0){
     $tutors["tutors"] = array();
 while ($row = $result->fetch_assoc()){
@@ -18,10 +25,10 @@ while ($row = $result->fetch_assoc()){
 
     array_push($tutors["tutors"],$tutorlist);
     }
-    $response = array('status' => 'success', 'data' => $tutors);
+    $response = array('status' => 'success', 'pageno'=>"$pageno", 'numofpage'=>"$number_of_page", 'data' => $tutors);
     sendJsonResponse($response);
 }else{
-    $response = array('status' => 'error', 'data' => null);
+    $response = array('status' => 'error', 'pageno'=>"$pageno", 'numofpage'=>"$number_of_page", 'data' => null);
     sendJsonResponse($response);
 }
 
