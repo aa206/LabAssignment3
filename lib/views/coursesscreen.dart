@@ -2,8 +2,10 @@ import 'dart:convert';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:mytutor/views/favoritescreen.dart';
 import 'package:mytutor/views/loginscreen.dart';
 import 'package:mytutor/views/mainscreen.dart';
+import 'package:mytutor/views/subscribescreen.dart';
 import 'package:mytutor/views/tutorsscreen.dart';
 import 'package:http/http.dart' as http;
 import '../models/user.dart';
@@ -20,6 +22,7 @@ class CoursesScreen extends StatefulWidget {
 class _CoursesScreenState extends State<CoursesScreen> {
   List<Subject>? subjectList = <Subject>[];
   String titlecenter = 'No Subjects Available';
+  var numofpage, curpage = 1;
 
   TextEditingController searchController = TextEditingController();
   String search = "";
@@ -46,7 +49,7 @@ class _CoursesScreenState extends State<CoursesScreen> {
   @override
   void initState() {
     super.initState();
-   _loadSubjects();
+   _loadSubjects(1, search);
   }
 
   @override
@@ -114,12 +117,28 @@ class _CoursesScreenState extends State<CoursesScreen> {
               _createDrawerItem(
                 icon: Icons.save,
                 text: 'My Subscribe',
-                onTap: () {},
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                        builder: (content) => SubscribeScreen(
+                          user: widget.user,
+                            )));
+                },
               ),
               _createDrawerItem(
                 icon: Icons.favorite,
                 text: 'My Favourite',
-                onTap: () {},
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                        builder: (content) => FavoriteScreen(
+                          user: widget.user,
+                            )));
+                },
               ),
               _createDrawerItem(
                 icon: Icons.settings,
@@ -141,17 +160,55 @@ class _CoursesScreenState extends State<CoursesScreen> {
             ),
         ),
         body: subjectList!.isEmpty
-        ? Center(
-          child: Text(titlecenter,
+          ? Padding(
+              padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+              child: Column(
+                children: [
+                  Center(
+                      child: Text(titlecenter,
                           style: const TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold)))
-        : Column(
-          children: [
-              const Padding(
-                padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
-                child: Text("Subjects Available",
+                              fontSize: 18, fontWeight: FontWeight.bold))),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: types.map((String char) {
+                        return Padding(
+                          padding: const EdgeInsets.fromLTRB(2, 0, 2, 0),
+                          child: ElevatedButton(
+                            child: Text(char),
+                            onPressed: () {
+                              _loadSubjects(1, search);
+                            },
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : Column(children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+                child: Text(titlecenter,
                     style: const TextStyle(
                         fontSize: 18, fontWeight: FontWeight.bold)),
+              ),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: types.map((String char) {
+                    return Padding(
+                      padding: const EdgeInsets.fromLTRB(2, 0, 2, 0),
+                      child: ElevatedButton(
+                        child: Text(char),
+                        onPressed: () {
+                          _loadSubjects(1, search);
+                        },
+                      ),
+                    );
+                  }).toList(),
+                ),
               ),
               Expanded(
                   child: GridView.count(
@@ -160,7 +217,19 @@ class _CoursesScreenState extends State<CoursesScreen> {
                         return Card(
                           child: Column(
                             children: [
-                              
+                              Flexible(
+                                flex: 6,
+                                child: CachedNetworkImage(
+                                  imageUrl: "http://10.143.159.53/mytutor3/assets/courses/" +
+                                      subjectList![index].subjectId.toString() +
+                                      '.jpg',
+                                  fit: BoxFit.cover,
+                                  placeholder: (context, url) =>
+                                      const LinearProgressIndicator(),
+                                  errorWidget: (context, url, error) =>
+                                      const Icon(Icons.error),
+                                ),
+                              ),
                                 Flexible(
                                   flex: 4,
                                   child: Column(
@@ -216,9 +285,19 @@ class _CoursesScreenState extends State<CoursesScreen> {
     onTap: onTap,
   );
   
-}     void _loadSubjects() {
+}     void _loadSubjects(int pageno, String _search) {
+        curpage = pageno;
+        numofpage ?? 1;
         http.post(Uri.parse("http://10.143.166.152/mytutor2/php/loadcourses.php"),
-            body: {}).then((response) {
+            body: {
+              'pageno': pageno.toString(),
+              'search': _search,
+              }).timeout(
+            const Duration(seconds: 5),
+            onTimeout: () {
+            return http.Response(
+            'Error', 408); // Request Timeout response status code
+      },).then((response) {
           var jsondata = jsonDecode(response.body);
           if (response.statusCode == 200 && jsondata['status'] == 'success') {
           var extractdata = jsondata['data'];
@@ -262,7 +341,7 @@ class _CoursesScreenState extends State<CoursesScreen> {
                     onPressed: () {
                       search = searchController.text;
                       Navigator.of(context).pop();
-                      _loadSubjects();
+                      _loadSubjects(1, search);
                     },
                     child: const Text("Search"),
                   )

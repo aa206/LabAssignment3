@@ -3,8 +3,10 @@ import 'dart:convert';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:mytutor/views/coursesscreen.dart';
+import 'package:mytutor/views/favoritescreen.dart';
 import 'package:mytutor/views/loginscreen.dart';
 import 'package:mytutor/views/mainscreen.dart';
+import 'package:mytutor/views/subscribescreen.dart';
 import 'package:mytutor/views/tutorsscreen.dart';
 import 'package:http/http.dart' as http;
 
@@ -23,6 +25,7 @@ class TutorsScreen extends StatefulWidget {
 class _TutorsScreenState extends State<TutorsScreen> {
   List<Tutors>? tutorsList = <Tutors>[];
   String titlecenter = 'No Tutors Available';
+  var numofpage, curpage = 1;
 
   TextEditingController searchController = TextEditingController();
   String search = "";
@@ -43,7 +46,7 @@ class _TutorsScreenState extends State<TutorsScreen> {
   @override
   void initState() {
     super.initState();
-    _loadTutors();
+    _loadTutors(1, search);
   }
 
   @override
@@ -112,12 +115,28 @@ class _TutorsScreenState extends State<TutorsScreen> {
               _createDrawerItem(
                 icon: Icons.save,
                 text: 'My Subscribe',
-                onTap: () {},
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                        builder: (content) => SubscribeScreen(
+                          user: widget.user,
+                            )));
+                },
               ),
               _createDrawerItem(
                 icon: Icons.favorite,
                 text: 'My Favourite',
-                onTap: () {},
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                        builder: (content) => FavoriteScreen(
+                          user: widget.user,
+                            )));
+                },
               ),
               _createDrawerItem(
                 icon: Icons.settings,
@@ -139,17 +158,55 @@ class _TutorsScreenState extends State<TutorsScreen> {
             ),
         ),
         body: tutorsList!.isEmpty
-        ? Center(
-          child: Text(titlecenter,
+          ? Padding(
+              padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+              child: Column(
+                children: [
+                  Center(
+                      child: Text(titlecenter,
                           style: const TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold)))
-        : Column(
-          children: [
-              const Padding(
-                padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
-                child: Text("Tutors Available",
+                              fontSize: 18, fontWeight: FontWeight.bold))),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: types.map((String char) {
+                        return Padding(
+                          padding: const EdgeInsets.fromLTRB(2, 0, 2, 0),
+                          child: ElevatedButton(
+                            child: Text(char),
+                            onPressed: () {
+                              _loadTutors(1, search);
+                            },
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : Column(children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+                child: Text(titlecenter,
                     style: const TextStyle(
                         fontSize: 18, fontWeight: FontWeight.bold)),
+              ),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: types.map((String char) {
+                    return Padding(
+                      padding: const EdgeInsets.fromLTRB(2, 0, 2, 0),
+                      child: ElevatedButton(
+                        child: Text(char),
+                        onPressed: () {
+                          _loadTutors(1, search);
+                        },
+                      ),
+                    );
+                  }).toList(),
+                ),
               ),
               Expanded(
                   child: GridView.count(
@@ -158,7 +215,19 @@ class _TutorsScreenState extends State<TutorsScreen> {
                         return Card(
                           child: Column(
                             children: [
-                              
+                              Flexible(
+                                flex: 6,
+                                child: CachedNetworkImage(
+                                  imageUrl: "http://10.143.159.53/mytutor3/assets/tutors/" +
+                                      tutorsList![index].tutorId.toString() +
+                                      '.jpg',
+                                  fit: BoxFit.cover,
+                                  placeholder: (context, url) =>
+                                      const LinearProgressIndicator(),
+                                  errorWidget: (context, url, error) =>
+                                      const Icon(Icons.error),
+                                ),
+                              ),
                                 Flexible(
                                   flex: 4,
                                   child: Column(
@@ -211,9 +280,19 @@ class _TutorsScreenState extends State<TutorsScreen> {
     onTap: onTap,
   );
   
-}     void _loadTutors() {
+}     void _loadTutors(int pageno, String _search) {
+        curpage = pageno;
+        numofpage ?? 1;
         http.post(Uri.parse("http://10.143.166.152/mytutor2/php/loadtutors.php"),
-            body: {}).then((response) {
+            body: {
+              'pageno': pageno.toString(),
+              'search': _search,
+              }).timeout(
+            const Duration(seconds: 5),
+            onTimeout: () {
+            return http.Response(
+            'Error', 408); // Request Timeout response status code
+      },).then((response) {
           var jsondata = jsonDecode(response.body);
           if (response.statusCode == 200 && jsondata['status'] == 'success') {
           var extractdata = jsondata['data'];
@@ -221,6 +300,7 @@ class _TutorsScreenState extends State<TutorsScreen> {
           extractdata['tutors'].forEach((v) {
             tutorsList!.add(Tutors.fromJson(v));
           });
+          
           }
         });
   }
@@ -256,7 +336,7 @@ class _TutorsScreenState extends State<TutorsScreen> {
                     onPressed: () {
                       search = searchController.text;
                       Navigator.of(context).pop();
-                      _loadTutors();
+                      _loadTutors(1, search);
                     },
                     child: const Text("Search"),
                   )
